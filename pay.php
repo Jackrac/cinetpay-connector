@@ -1,4 +1,10 @@
 <?php
+    $apikey = "YOUR_APIKEY";
+    $site_id = "YOUR_SITEID";
+?>
+
+<?php
+    include 'utils.php';
 
     // TODO : juste pour les tests en local - a enlever avant mise en PROD
     if (!isset($_SERVER["HTTP_HOST"])) {
@@ -9,10 +15,11 @@
 
     // TODO : Checker si la form est encore ouverte et si le montant match sinon retourner une erreur (Variable $error)
 
-    $url = 'https://api-checkout.cinetpay.com/v2/payment';
+    $url = 'https://webhook-test.com/ff5379e252fc8aa70059329e536c0172';
+    //$url = 'https://api-checkout.cinetpay.com/v2/payment';
     $data = [
-        "apikey" => "YOUR_APIKEY",
-        "site_id" => "YOUR_SITEID",
+        "apikey" => $apikey,
+        "site_id" => $site_id,
         "transaction_id" => strval(floor(((float)rand()/(float)getrandmax()) * 100000000)), //
         "amount" => floatval($_POST['amount']),
         "currency" => "XOF",
@@ -31,30 +38,14 @@
             'content' => json_encode( $data ),
         ],
     ];
-    
-    $context = stream_context_create($options);
-    $responseString = file_get_contents($url, false, $context);
-    if ($responseString === false) {
-        $error = "La création de transaction pour le paiement a échoué";
-    }
-    else
-    {
-        if(!json_validate($responseString))
-        {
-            $error = "La reponse du serveur de transaction n'est pas valide";
-        }
-        else
-        {
-            $responseJson = json_decode($responseString, true);
-            $paiementUrl = $responseJson['data']['payment_url'];
-        }
-    }
+
+    $response = getJson($url, $data);
 ?>
 
-<?php if($error == ''): ?>
-    <iframe src="<?= $paiementUrl ?>" title="CinetPay Page"></iframe>
+<?php if($response['error'] === ''): ?>
+    <iframe src="<?= $response['response']['data']['payment_url'] ?>" title="CinetPay Page"></iframe>
 <?php else: ?>
-    <span><?= $error ?></span>
+    <span><?= $response['error'] ?></span>
 <?php endif; ?>
 
 
