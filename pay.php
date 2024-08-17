@@ -15,8 +15,8 @@
 
     // TODO : Checker si la form est encore ouverte et si le montant match sinon retourner une erreur (Variable $error)
 
-    $url = 'https://webhook-test.com/ff5379e252fc8aa70059329e536c0172';
-    //$url = 'https://api-checkout.cinetpay.com/v2/payment';
+    //$url = 'https://webhook-test.com/ff5379e252fc8aa70059329e536c0172';
+    $url = 'https://api-checkout.cinetpay.com/v2/payment';
     $data = [
         "apikey" => $apikey,
         "site_id" => $site_id,
@@ -28,7 +28,8 @@
         "notify_url" =>  "https://eaa.ci/paiement/notify.php",
         "return_url" =>  "https://eaa.ci/paiement/feedback.php?formid=" . $_POST['formid'],
         "channels" =>  "ALL",
-        "lang" =>  "FR"
+        "lang" =>  "FR",
+        "metadata" => $_POST['formid']
     ];
 
     $options = [
