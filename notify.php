@@ -1,11 +1,8 @@
 <?php
-    $apikey = "YOUR_APIKEY";
-    $site_id = "YOUR_SITEID";
+    require 'utils.php';
 ?>
 
 <?php
-    include 'utils.php';
-    
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         echo "Pong!";
     }
@@ -17,43 +14,48 @@
             header('HTTP/1.1 400 Bad Request', true, 400); exit();
         }
 
-        // TODO : Checker le statut du formulaire en base s'il est fermé CinetPay pour valider le status de la transaction
-        /* TODO : Appeler CinetPay pour valider le status de la transaction ou faire la verification hash_hmac
-           (https://docs.cinetpay.com/api/1.0-fr/checkout/hmac) */
-
-        $url = 'https://api-checkout.cinetpay.com/v2/payment/check';
-        $data = [
-            "apikey" => "YOUR_APIKEY",
-            "site_id" => "YOUR_SITEID",
-            "transaction_id" => $_POST['cpm_trans_id']
-        ];
+        $formEntryStatus = getFormEntryStatus($_POST['cpm_custom']);
     
-        $options = [
-            'http' => [
-                'header' => 'Content-Type: application/json',
-                'method' => 'POST',
-                'content' => json_encode( $data ),
-            ],
-        ];
-           
-        $response = getJson($url, $data);
-        if($response['error'] != '')
+        if(!$formEntryStatus['isOpen'])
         {
-            echo $response['error'];
+            echo $formEntryStatus['error'];
             header('HTTP/1.1 500 Internal Server Error', true, 500); exit();
         }
         else
         {
-            $transationStatus = $response['response']['data']['status'];
-
-            // Changer le statut du formulaire en base
-            if($transationStatus == "ACCEPTED")
-            {
-
-            }
-            else if($transationStatus == "REFUSED")
-            {
+            $url = 'https://api-checkout.cinetpay.com/v2/payment/check';
+            $data = [
+                "apikey" => "YOUR_APIKEY",
+                "site_id" => "YOUR_SITEID",
+                "transaction_id" => $_POST['cpm_trans_id']
+            ];
             
+            $response = getJson($url, $data);
+            if($response['error'] != '')
+            {
+                echo $response['error'];
+                header('HTTP/1.1 500 Internal Server Error', true, 500); exit();
+            }
+            else
+            {
+                $transationStatus = $response['response']['data']['status'];
+                $entryid = $response['response']['data']['metadata'];
+
+                $formEntryStatus = getFormEntryStatus($entryid);
+    
+                if(!$formEntryStatus['isOpen'])
+                {
+                    echo $formEntryStatus['error'];
+                    header('HTTP/1.1 500 Internal Server Error', true, 500); exit();
+                }
+                else if($transationStatus == "ACCEPTED")
+                {
+                    setFormEntryStatus($entryid, "Paye");
+                }
+                else if($transationStatus == "REFUSED")
+                {
+                    setFormEntryStatus($entryid, "Refuse");
+                }
             }
         }
     }
