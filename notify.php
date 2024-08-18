@@ -14,50 +14,41 @@
             header('HTTP/1.1 400 Bad Request', true, 400); exit();
         }
 
-        $formEntryStatus = getFormEntryStatus($_POST['cpm_custom']);
-    
-        if(!$formEntryStatus['isOpen'])
+        $url = 'https://api-checkout.cinetpay.com/v2/payment/check';
+        $data = [
+            "apikey" => $apikey,
+            "site_id" => $site_id,
+            "transaction_id" => $_POST['cpm_trans_id']
+        ];
+        
+        $response = getJson($url, $data);
+        if($response['error'] != '')
         {
-            echo $formEntryStatus['error'];
+            echo $response['error'];
             header('HTTP/1.1 500 Internal Server Error', true, 500); exit();
         }
         else
         {
-            $url = 'https://api-checkout.cinetpay.com/v2/payment/check';
-            $data = [
-                "apikey" => "YOUR_APIKEY",
-                "site_id" => "YOUR_SITEID",
-                "transaction_id" => $_POST['cpm_trans_id']
-            ];
-            
-            $response = getJson($url, $data);
-            if($response['error'] != '')
+            $transationStatus = $response['response']['data']['status'];
+            $entryid = $response['response']['data']['metadata'];
+
+            $formEntryStatus = getFormEntryStatus($entryid);
+
+            if(!$formEntryStatus['isOpen'])
             {
-                echo $response['error'];
+                echo $formEntryStatus['error'];
                 header('HTTP/1.1 500 Internal Server Error', true, 500); exit();
             }
-            else
+            else if($transationStatus == "ACCEPTED")
             {
-                $transationStatus = $response['response']['data']['status'];
-                $entryid = $response['response']['data']['metadata'];
-
-                $formEntryStatus = getFormEntryStatus($entryid);
-    
-                if(!$formEntryStatus['isOpen'])
-                {
-                    echo $formEntryStatus['error'];
-                    header('HTTP/1.1 500 Internal Server Error', true, 500); exit();
-                }
-                else if($transationStatus == "ACCEPTED")
-                {
-                    setFormEntryStatus($entryid, "Paye");
-                }
-                else if($transationStatus == "REFUSED")
-                {
-                    setFormEntryStatus($entryid, "Refuse");
-                }
+                setFormEntryStatus($entryid, "Paye");
+            }
+            else if($transationStatus == "REFUSED")
+            {
+                setFormEntryStatus($entryid, "Refuse");
             }
         }
+        
     }
     else
     {
