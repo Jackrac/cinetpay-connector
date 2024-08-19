@@ -46,7 +46,7 @@
         ];
     }
 
-    function getFormEntryStatus($entryid)
+    function getFormEntryStatus($entryid, $errorIfEntryPaid = true)
     {
         /* 1. On recherche l'entree de formulaire dont l'ID est passe en parametre */
         $form_status = wpFluent()
@@ -65,7 +65,7 @@
             $error = "Formulaire introuvable";
         }
         /* 3. Si l'entree de formulaire est deja fermee (c-a-d payee), on retourne un message d'erreur */
-        else if($form_status->status === "Paye")
+        else if($form_status->status === "Paye" && $errorIfEntryPaid)
         {
             $error = "Formulaire deja complete";
             $formId = strval($form_status->form_id);

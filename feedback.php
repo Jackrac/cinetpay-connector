@@ -26,7 +26,7 @@
             $transationStatus = $response['response']['data']['status'];
             $entryid = $response['response']['data']['metadata'];
 
-            $formEntryStatus = getFormEntryStatus($entryid);
+            $formEntryStatus = getFormEntryStatus($entryid, $errorIfEntryPaid = false);
 
             if(!$formEntryStatus['isOpen'])
             {
