@@ -5,7 +5,6 @@
     // Constantes
     $apikey = "YOUR_APIKEY";
     $site_id = "YOUR_SITEID";
-    $amount = 10000;
 ?>
 
 <?php
@@ -53,11 +52,12 @@
         $form_status = wpFluent()
         ->table('fluentform_submissions')
         ->where('id', $entryid)
-        ->select(['fluentform_submissions.status'])
+        ->select(['fluentform_submissions.status', 'fluentform_submissions.form_id'])
         ->first();
 
         $error = '';
         $isOpen = false;
+        $formId = '';
 
         /* 2. Si l'entree de formulaire n'existe pas, on retourne un message d'erreur */
         if($form_status == null)
@@ -68,15 +68,18 @@
         else if($form_status->status === "Paye")
         {
             $error = "Formulaire deja complete";
+            $formId = strval($form_status->form_id);
         }
         /* 4. Sinon (c-a-d l'entree de formulaire existe bien et n'est pas encore fermee), on cree une transaction et on affiche la page CinetPay */
         else
         {
             $isOpen = true;
+            $formId = strval($form_status->form_id);
         }
 
         return [
             'isOpen' => $isOpen,
+            'formId' => $formId,
             'error' => $error
         ];
     }

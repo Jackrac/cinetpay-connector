@@ -16,6 +16,17 @@
     }
     else
     {
+        $amonut = 0;
+        
+        if($formEntryStatus['formId'] === 'XXXXX')
+        {
+            $amonut = 10000;
+        }
+        else if($formEntryStatus['formId'] === 'YYYYY')
+        {
+            $amonut = 52000;
+        }
+        
         $url = 'https://api-checkout.cinetpay.com/v2/payment';
         $data = [
             "apikey" => $apikey,
@@ -35,11 +46,18 @@
         $response = getJson($url, $data);
         $error = $response['error'];
         $payment_url = $response['response']['data']['payment_url'];
+
+        if($error === '')
+        {
+            header('Location: ' . $payment_url, true, 302);
+            exit();
+        }
     }
 ?>
 
 <?php if($error === ''): ?>
-    <iframe src="<?= $payment_url ?>" title="CinetPay Page" style="position:fixed; top:0; left:0; bottom:0; right:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999;"></iframe>
+    <p style="text-align:center">Si vous n'etes pas redirigé automatiquement vers le site de paiement</p>
+    <p style="text-align:center"><a href="<?= $payment_url ?>">Cliquez sur ce lien</a></p>
 <?php else: ?>
-    <span><?= $error ?></span>
+    <p style="text-align:center"><?= $error ?></p>
 <?php endif; ?>

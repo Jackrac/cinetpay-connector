@@ -8,17 +8,11 @@
     }
     elseif($_SERVER['REQUEST_METHOD'] === 'POST')
     {
-        if($_POST['cpm_site_id'] != $site_id)
-        {
-            echo "Mauvaise reference de site";
-            header('HTTP/1.1 400 Bad Request', true, 400); exit();
-        }
-
         $url = 'https://api-checkout.cinetpay.com/v2/payment/check';
         $data = [
             "apikey" => $apikey,
             "site_id" => $site_id,
-            "transaction_id" => $_POST['cpm_trans_id']
+            "transaction_id" => $_POST['transaction_id']
         ];
         
         $response = getJson($url, $data);
@@ -48,7 +42,6 @@
                 setFormEntryStatus($entryid, "Refuse");
             }
         }
-        
     }
     else
     {
@@ -56,3 +49,13 @@
         header('HTTP/1.1 400 Bad Request', true, 400); exit();
     }
 ?>
+
+<?php if($transationStatus === "ACCEPTED"): ?>
+    <p style="text-align:center">Félicitations !</p>
+    <p style="text-align:center">Votre paiement a ete éffectué avec succès</p>
+    <p style="text-align:center"><a href="https://eaa.ci/">Retour a la page d'accueil</a></p>
+<?php else: ?>
+    <p style="text-align:center">Il semble que votre paiement ait malheureusement échoué</p>
+    <p style="text-align:center">Veuillez refaire un nouvelle demande</p>
+    <p style="text-align:center"><a href="https://eaa.ci/">Retour a la page d'accueil</a></p>
+<?php endif; ?>
