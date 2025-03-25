@@ -13,6 +13,7 @@ CinetPay Connector is a lightweight PHP library designed to simplify the integra
 ## Requirements
 
 - PHP 7.0 or higher
+- Wordpress FluentForm plugin
 - cURL extension enabled in PHP
 
 ## Installation
